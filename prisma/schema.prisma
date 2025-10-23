@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Link {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique @db.VarChar(7) // 7-char Base62 code
+  longUrl   String   @db.Text // URLs can be very long
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  clicks    Int      @default(0) // Track click count
+  
+  @@index([code]) // Fast lookup for redirects (most common operation)
+  @@index([createdAt(sort: Desc)]) // Fast sorting for recent links
+  @@map("links")
+}

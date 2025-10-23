@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Linkly
 
-## Getting Started
+Minimal URL shortener built with Next.js (App Router), Prisma, and PostgreSQL.
 
-First, run the development server:
+## Tech Stack
 
+- Next.js 16, React 19, TypeScript 5
+- Prisma 6 with PostgreSQL
+- Tailwind CSS 4
+
+## Setup
+
+Prerequisites
+- Node.js 18+
+- PostgreSQL
+- pnpm
+
+Install
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Environment
+Create a `.env` in the project root:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/linkly"
+# Optional when using pooled connections
+DIRECT_URL="postgresql://user:password@localhost:5432/linkly"
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Database
+```bash
+pnpm db:migrate
+pnpm db:generate
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run
+```bash
+pnpm dev
+```
 
-## Learn More
+## API
 
-To learn more about Next.js, take a look at the following resources:
+- POST `/api/links`
+  - Body: `{ "longUrl": "https://example.com" }`
+  - Returns: `{ code, shortUrl, longUrl, clicks }` (201)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- GET `/:code`
+  - Redirects to original URL and increments click count
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data Model
 
-## Deploy on Vercel
+```prisma
+model Link {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique @db.VarChar(7)
+  longUrl   String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  clicks    Int      @default(0)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+  @@index([code])
+  @@index([createdAt(sort: Desc)])
+  @@map("links")
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+- `pnpm dev` — start dev server
+- `pnpm build` — build
+- `pnpm start` — start production
+- `pnpm lint` — lint
+- `pnpm db:migrate` — run migrations
+- `pnpm db:generate` — generate Prisma client
+- `pnpm db:push` — push schema
+- `pnpm db:studio` — open Prisma Studio
+
