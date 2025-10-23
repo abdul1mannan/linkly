@@ -29,7 +29,7 @@ export async function GET(
     data: {
       clicks: { increment: 1 },
     },
-  }).catch(err => console.error('Failed to update clicks:', err));
+  }).catch((err: Error) => console.error('Failed to update clicks:', err.message));
 
   // Perform 301 permanent redirect
   redirect(link.longUrl);

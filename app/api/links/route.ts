@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateCode, isReservedCode, isValidUrl } from '@/lib/utils';
 
+interface CreateLinkBody {
+  longUrl: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json() as CreateLinkBody;
     const { longUrl } = body;
 
     // Validate longUrl
@@ -74,7 +78,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Error creating short link:', error);
+    console.error('Error creating short link:', error instanceof Error ? error.message : String(error));
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
